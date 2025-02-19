@@ -1,0 +1,1005 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//// Enums
+
+enum DocumentState {
+  REVISION
+  INUSE
+  OBSOLETE
+}
+
+enum TipoIncidente {
+  HUMANO         @map("Humano")
+  SEGURANCA      @map("Segurança")
+  INFRAESTRUTURAS @map("Infraestruturas")
+  AMBIENTAL      @map("Ambiental")
+  SOCIAL         @map("Social")
+  OUTROS         @map("Outros")
+}
+
+enum EnvoldidoOutroAcidente {
+  SIM  @map("Sim")
+  NAO  @map("Não")
+}
+
+enum RealizadaAnaliseRiscoImpactoAmbientalAntes {
+  SIM  @map("Sim")
+  NAO  @map("Não")
+}
+
+enum ExisteProcedimentoParaActividade {
+  SIM  @map("Sim")
+  NAO  @map("Não")
+}
+
+enum ColaboradorRecebeuTreinamento {
+  SIM  @map("Sim")
+  NAO  @map("Não")
+}
+
+enum NaturezaEExtensaoIncidente {
+  INTOXICACAO_LEVE   @map("Intoxicação leve")
+  INTOXICACAO_GRAVE  @map("Intoxicação grave")
+  FERIMENTO_LEVE     @map("Ferimento leve")
+  FERIMENTO_GRAVE    @map("Ferimento grave")
+  MORTE              @map("Morte")
+  NENHUM             @map("Nenhum")
+  OUTROS             @map("Outros")
+}
+
+enum PossiveisCausasAcidenteMetodologia {
+  FALTA_DE_PROCEDIMENTOS_PARA_ACTIVIDADE  @map("Falta de procedimentos para actividade")
+  FALHAS_NO_PROCEDIMENTO_EXISTENTE         @map("Falhas no procedimento existente")
+  FALTA_DE_PLANO_DE_TRABALHO               @map("Falta de plano de trabalho")
+  FALHA_NA_COMUNICACAO                     @map("Falha na comunicação")
+  OUTROS                                   @map("Outros")
+}
+
+enum PossiveisCausasAcidenteEquipamentos {
+  FALHA_DE_EQUIPAMENTO               @map("Falha de equipamento")
+  EQUIPAMENTO_INAPROPRIADO           @map("Equipamento inapropriado")
+  FALHA_NA_PROTECCAO_DO_EQUIPAMENTO  @map("Falha na protecção do equipamento")
+  FALHA_NA_SINALIZACAO               @map("Falha na sinalização")
+  ESPACO_INAPROPRIADO_PARA_EQUIPAMENTO @map("Espaço inapropriado para equipamento")
+  OUTROS                             @map("Outros")
+}
+
+enum PossiveisCausasAcidenteMaterial {
+  FERRAMENTA_DEFEITUOSA  @map("Ferramenta defeituosa")
+  FALHA_NA_FERRAMENTA    @map("Falha na ferramenta")
+  FALTA_DE_INVENTARIO    @map("Falta de inventário")
+  EPI_INADEQUADO         @map("EPI inadequado")
+  OUTROS                 @map("Outros")
+}
+
+enum PossiveisCausasAcidenteColaboradores {
+  FALTA_DE_TREINAMENTO               @map("Falta de treinamento")
+  NEGLIGENCIA_DO_COLABORADOR         @map("Negligência do colaborador")
+  NEGLIGENCIA_DO_OPERADOR_SAZONAL    @map("Negligência do operador sazonal")
+  NAO_CONCARDANCIA_COM_PROCEDIMENTOS @map("Não concordância com procedimentos")
+  USO_INADEQUADO_DE_EQUIPAMENTO      @map("Uso inadequado de equipamento")
+  OUTROS                             @map("Outros")
+}
+
+enum PossiveisCausasAcidenteAmbienteESeguranca {
+  AGENTES_PERIGOSOS    @map("Agentes perigosos")
+  FALTA_DE_SINALIZACAO  @map("Falta de sinalização")
+  PAVIMENTO_IRREGULAR   @map("Pavimento irregular")
+  PAVIMENTO_ESCORREGADIO @map("Pavimento escorregadio")
+  OUTROS                @map("Outros")
+}
+
+enum PossiveisCausasAcidenteMedicoes {
+  FALTA_NO_INSTRUMENTO_DE_MEDICAO       @map("Falta no instrumento de medição")
+  INSTRUMENTO_DE_AJUSTAMENTO_INADEQUADO   @map("Instrumento de ajustamento inadequado")
+  FALHA_NO_INSTRUMENTO_DE_CALIBRACAO      @map("Falha no instrumento de calibração")
+  FALTA_DE_INSPENCAO                      @map("Falta de inspenção")
+  OUTROS                                  @map("Outros")
+}
+
+enum IncidenteEnvolveuEmpreteiro {
+  SIM  @map("Sim")
+  NAO  @map("Não")
+}
+
+enum Status {
+  PENDING      @map("PENDING")
+  IN_PROGRESS  @map("IN_PROGRESS")
+  COMPLETED    @map("COMPLETED")
+}
+
+enum EfecctivivenessEvaluation {
+  EFFECTIVE     @map("EFFECTIVE")
+  NOT_EFFECTIVE @map("NOT_EFFECTIVE")
+}
+
+enum NotifiedComplaint {
+  YES @map("YES")
+  NO  @map("NO")
+}
+
+enum ComplaintantGender {
+  MALE   @map("MALE")
+  FEMALE @map("FEMALE")
+}
+
+enum AnonymousComplaint {
+  YES @map("YES")
+  NO  @map("NO")
+}
+
+enum ComplaintantAccepted {
+  YES @map("YES")
+  NO  @map("NO")
+}
+
+enum ClaimCategory {
+  Odor                    @map("Odor")
+  Noise                   @map("Noise")
+  Effluents               @map("Effluents")
+  Company_vehicles        @map("Company vehicles")
+  Flow_of_migrant_workers @map("Flow of migrant workers")
+  Security_personnel      @map("Security personnel")
+  gbv                     @map("GBV/SA/SEA")
+  Other                   @map("Other")
+}
+
+enum CollectedInformation {
+  PHOTOS                        @map("Photos")
+  PROOF_OF_LEGITIMACY_DOCUMENTS @map("Proof of legitimacy documents")
+}
+
+enum ResolutionType {
+  internal_resolution      @map("Internal resolution")
+  second_level_resolution  @map("Second level resolution")
+  third_level_resolution   @map("Third level resolution")
+}
+
+enum ResolutionSubmitted {
+  YES @map("YES")
+  NO  @map("NO")
+}
+
+enum ComplaintantSatisfaction {
+  SATISFIED     @map("SATISFIED")
+  NOT_SATISFIED @map("NOT_SATISFIED")
+}
+
+enum MonitoringAfterClosure {
+  YES @map("YES")
+  NO  @map("NO")
+}
+
+enum PreferedContactMethod {
+  EMAIL        @map("EMAIL")
+  PHONE        @map("PHONE")
+  FACE_TO_FACE @map("FACE_TO_FACE")
+}
+
+enum PreferedLanguage {
+  PORTUGUESE @map("PORTUGUESE")
+  ENGLISH    @map("ENGLISH")
+  OTHER      @map("OTHER")
+}
+
+enum Duration {
+  CURTO_PRAZO @map("CURTO_PRAZO")
+  MEDIO_PRAZO @map("MEDIO_PRAZO")
+  LONGO_PRAZO @map("LONGO_PRAZO")
+}
+
+enum Extension {
+  LOCAL    @map("LOCAL")
+  REGIONAL @map("REGIONAL")
+  NACIONAL @map("NACIONAL")
+  GLOBAL   @map("GLOBAL")
+}
+
+enum Intensity {
+  BAIXA @map("BAIXA")
+  MEDIA @map("MEDIA")
+  ALTA  @map("ALTA")
+}
+
+enum LifeCycle {
+  PRE_CONSTRUCAO           @map("PRE_CONSTRUCAO")
+  CONSTRUCAO               @map("CONSTRUCAO")
+  OPERACAO                 @map("OPERACAO")
+  DESATIVACAO              @map("DESATIVACAO")
+  ENCERRAMENTO             @map("ENCERRAMENTO")
+  REINTEGRACAO_RESTAURACAO @map("REINTEGRACAO_RESTAURACAO")
+}
+
+enum Probability {
+  IMPROVAVEL         @map("IMPROVAVEL")
+  PROVAVEL           @map("PROVAVEL")
+  ALTAMENTE_PROVAVEL @map("ALTAMENTE_PROVAVEL")
+  DEFINITIVA         @map("DEFINITIVA")
+}
+
+enum ResponseType {
+  SIM @map("SIM")
+  NAO @map("NAO")
+}
+
+enum Statute {
+  POSITIVO @map("POSITIVO")
+  NEGATIVO @map("NEGATIVO")
+}
+
+enum LegalStatus {
+  ACTIVE  @map("ACTIVE")
+  REVOKED @map("REVOKED")
+  AMENDED @map("AMENDED")
+}
+
+enum Provinces {
+  MAPUTO        @map("MAPUTO")
+  MAPUTO_CITY   @map("MAPUTO_CITY")
+  GAZA          @map("GAZA")
+  INHAMBANE     @map("INHAMBANE")
+  SOFALA        @map("SOFALA")
+  MANICA        @map("MANICA")
+  TETE          @map("TETE")
+  ZAMBEZIA      @map("ZAMBEZIA")
+  NAMPULA       @map("NAMPULA")
+  CABO_DELGADO  @map("CABO_DELGADO")
+  NIASSA        @map("NIASSA")
+}
+
+enum ActivityType {
+  TURISTICA     @map("TURISTICA")
+  INDUSTRIAL    @map("INDUSTRIAL")
+  AGRO_PECUARIA @map("AGRO_PECUARIA")
+  ENERGETICA    @map("ENERGETICA")
+  SERVICOS      @map("SERVICOS")
+  OUTRA         @map("OUTRA")
+}
+
+enum DevelopmentStage {
+  NOVA         @map("NOVA")
+  REABILITACAO @map("REABILITACAO")
+  EXPANSAO     @map("EXPANSAO")
+  OUTRO        @map("OUTRO")
+}
+
+enum InsertionPoint {
+  RURAL      @map("RURAL")
+  URBANO     @map("URBANO")
+  PERIURBANO @map("PERIURBANO")
+}
+
+enum TerritorialPlanningFramework {
+  ESPACO_HABITACIONAL @map("ESPACO_HABITACIONAL")
+  INDUSTRIAL          @map("INDUSTRIAL")
+  SERVICOS            @map("SERVICOS")
+  OUTRO               @map("OUTRO")
+}
+
+enum PyhsicalCharacteristics {
+  PLANICIE  @map("PLANICIE")
+  PLANALTO  @map("PLANALTO")
+  VALE      @map("VALE")
+  MONTANHA  @map("MONTANHA")
+}
+
+enum PredominantEcosystems {
+  FLUVIAL   @map("FLUVIAL")
+  LACUSTRE  @map("LACUSTRE")
+  MARINHO   @map("MARINHO")
+  TERRESTRE @map("TERRESTRE")
+}
+
+enum LocationZone {
+  COSTEIRA @map("COSTEIRA")
+  INTERIOR @map("INTERIOR")
+  ILHA     @map("ILHA")
+}
+
+enum TypeOfPredominantVegetation {
+  FLORESTA @map("FLORESTA")
+  SAVANA   @map("SAVANA")
+  OUTRO    @map("OUTRO")
+}
+
+enum LandUse {
+  AGROPECUARIO @map("AGROPECUARIO")
+  HABITACIONAL @map("HABITACIONAL")
+  INDUSTRIAL   @map("INDUSTRIAL")
+  PROTECCAO    @map("PROTECCAO")
+  OUTRO        @map("OUTRO")
+}
+
+enum RiskCategory {
+  ALTO        @map("ALTO")
+  SUBSTANCIAL @map("SUBSTANCIAL")
+  MODERADO    @map("MODERADO")
+  BAIXO       @map("BAIXO")
+}
+
+enum TrainingTtype {
+  INTERNAL @map("Internal")
+  EXTERNAL @map("External")
+}
+
+enum Months {
+  JANUARY   @map("January")
+  FEBRUARY  @map("February")
+  MARCH     @map("March")
+  APRIL     @map("April")
+  MAY       @map("May")
+  JUNE      @map("June")
+  JULY      @map("July")
+  AUGUST    @map("August")
+  SEPTEMBER @map("September")
+  OCTOBER   @map("October")
+  NOVEMBER  @map("November")
+  DECEMBER  @map("December")
+}
+
+enum TrainingStatus {
+  PLANNED   @map("Planned")
+  COMPLETED @map("Completed")
+}
+
+enum AnswerChoices {
+  SATISFACTORY             @map("Satisfactory")
+  PARTIALLY_SATISFACTORY     @map("Partially Satisfactory")
+  UNSATISFACTORY           @map("Unsatisfactory")
+}
+
+enum HumanResourceAnswerChoices {
+  EFFECTIVE   @map("effective")
+  INEFFECTIVE @map("ineffective")
+}
+
+enum Effectiveness {
+  EFFECTIVE   @map("Effective")
+  INEFFECTIVE @map("Not effective")
+}
+
+//// Models
+
+model User {
+  id            Int   @id @default(autoincrement())
+  name          String    @default("NO_NAME")
+  email         String    @unique(map: "user_email_idx")
+  password      String?
+  role          String    @default("user")
+  emailVerified DateTime? @db.Timestamp(6)
+  image         String?
+  address       Json?     @db.Json
+  paymentMethod String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  documents   Document[]
+  relatorios  RelatorioAcidenteIncidente[]
+  claimNonComplianceControls ClaimNonComplianceControl[]
+  claimComplainControls ClaimComplainControl[]
+  photoDocumentProvingClosures PhotoDocumentProvingClosure[]
+  complaintAndClaimRecords ComplaintAndClaimRecord[]
+  environAssessments EnvironAndSocialRiskAndImapactAssessement[]
+  legalRequirements LegalRequirementControl[]
+  screeningForms EnvironmentalSocialScreening[]
+  preliminaryEnvironmentalInformation PreliminaryEnvironmentalInformation[]
+  accounts Account[]
+  sessions Session[]
+}
+
+model Account {
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "account_userId_user_id_fk")
+  @@id([provider, providerAccountId], map: "account_provider_providerAccountId_pk")
+}
+
+model Session {
+  sessionToken String   @id
+  userId       Int   
+  expires      DateTime @db.Timestamp(6)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "session_userId_user_id_fk")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model DocumentType {
+  id          Int        @id @default(autoincrement())
+  description String     @db.VarChar(255)
+  documents   Document[]
+}
+
+model Document {
+  id               Int           @id @default(autoincrement())
+  code             String        @db.VarChar(255)
+  creation_date    DateTime      @db.Date
+  revision_date    DateTime      @db.Date
+  document_name    String        @db.VarChar(255)
+  documentTypeId   Int
+  documentType     DocumentType  @relation(fields: [documentTypeId], references: [id])
+  document_path    String        // Stores file path
+  documentState    DocumentState
+  retention_period DateTime      @db.Date
+  disposal_method  String        @db.VarChar(255)
+  observation      String
+  createdById      Int
+  createdBy        User          @relation(fields: [createdById], references: [id])
+}
+
+model Department {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String
+
+  pessoaEnvolvidas PessoaEnvolvida[]
+  relatorios       RelatorioAcidenteIncidente[]
+  claimNonComplianceControls ClaimNonComplianceControl[]
+  environAssessments EnvironAndSocialRiskAndImapactAssessement[]
+  trainingNeeds      TrainingNeeds[]
+  trainingEffectivnessAssessments TrainingEffectivnessAssessment[]
+}
+
+model PessoaEnvolvida {
+  id                 Int        @id @default(autoincrement())
+  nome               String     @db.VarChar(255)
+  departamentoId     Int
+  departamento       Department @relation(fields: [departamentoId], references: [id])
+  outras_informacoes String
+  relatorios       RelatorioAcidenteIncidente[]
+}
+
+model PessoasEnvolvidasNaInvestigacao {
+  id         Int      @id @default(autoincrement())
+  nome       String   @db.VarChar(255)
+  empresa    String   @db.VarChar(255)
+  actividade String   @db.VarChar(255)
+  assinatura String   @db.VarChar(255)
+  data       DateTime @db.Date
+  relatorios RelatorioAcidenteIncidente[]
+}
+
+model AccoesImediatasECorrectivas {
+  id          Int      @id @default(autoincrement())
+  accao       String   @db.VarChar(255)
+  descricao   String
+  responsavel String   @db.VarChar(255)
+  data        DateTime @db.Date
+  assinatura  String   @db.VarChar(255)
+  relatorios  RelatorioAcidenteIncidente[]
+}
+
+model RelatorioAcidenteIncidente {
+  id                                        Int       @id @default(autoincrement())
+  nome                                      String    @db.VarChar(255)
+  funcao                                    String    @db.VarChar(255)
+  departamentoId                            Int
+  departamento                              Department @relation(fields: [departamentoId], references: [id])
+  data                                      DateTime  @db.Date
+  hora                                      DateTime  @db.Time
+  local                                     String    @db.VarChar(255)
+  actividade_em_curso                       String    @db.VarChar(255)
+  descricao_do_acidente                     String
+  tipo_de_incidente                         TipoIncidente
+  equipamento_envolvido                     String    @db.VarChar(255)
+  observacao                                String
+  colaborador_envolvido_outro_acidente_antes  EnvoldidoOutroAcidente
+  realizada_analise_risco_impacto_ambiental_antes RealizadaAnaliseRiscoImpactoAmbientalAntes
+  existe_procedimento_para_actividade        ExisteProcedimentoParaActividade
+  colaborador_recebeu_treinamento              ColaboradorRecebeuTreinamento
+  incidente_envolve_empreteiro               IncidenteEnvolveuEmpreteiro
+  nome_comercial_empreteiro                  String?   @db.VarChar(255)
+  natureza_e_extensao_incidente              NaturezaEExtensaoIncidente
+  possiveis_causas_acidente_metodologia        PossiveisCausasAcidenteMetodologia
+  possiveis_causas_acidente_equipamentos       PossiveisCausasAcidenteEquipamentos
+  possiveis_causas_acidente_material           PossiveisCausasAcidenteMaterial
+  possiveis_causas_acidente_colaboradores      PossiveisCausasAcidenteColaboradores
+  possiveis_causas_acidente_ambiente_e_seguranca PossiveisCausasAcidenteAmbienteESeguranca
+  possiveis_causas_acidente_medicoes           PossiveisCausasAcidenteMedicoes
+  pessoa_envolvidaId                          Int
+  pessoa_envolvida                            PessoaEnvolvida @relation(fields: [pessoa_envolvidaId], references: [id])
+  pessoas_envolvidas_na_investigacao          PessoasEnvolvidasNaInvestigacao[]
+  accoes_imediatas_e_correctivas              AccoesImediatasECorrectivas[]
+  fotografia_frontal                        String?
+  fotografia_posterior                      String?
+  fotografia_lateral_direita                String?
+  fotografia_lateral_esquerda               String?
+  fotografia_do_melhor_angulo               String?
+  fotografia                                String?
+  criado_porId                              Int
+  criado_por                                User    @relation(fields: [criado_porId], references: [id])
+  criado_em                                 DateTime @default(now())
+}
+
+model ClaimNonComplianceControl {
+  id                           Int       @id @default(autoincrement())
+  number                       String    @unique @db.VarChar(50)
+  departmentId                 Int
+  department                   Department @relation(fields: [departmentId], references: [id])
+  non_compliance_description   String
+  identified_causes            String
+  corrective_actions         String
+  responsible_person           String    @db.VarChar(100)
+  deadline                     DateTime  @db.Date
+  status                       Status    @default(PENDING)
+  effectiveness_evaluation     EfecctivivenessEvaluation @default(NOT_EFFECTIVE)
+  responsible_person_evaluation String   @db.VarChar(100)
+  observation                  String
+  created_byId                 Int
+  created_by                   User      @relation(fields: [created_byId], references: [id])
+  created_at                   DateTime  @default(now())
+}
+
+model ClaimComplainControl {
+  id                                  Int       @id @default(autoincrement())
+  number                              String    @unique @db.VarChar(50)
+  claim_complain_submitted_by         String    @db.VarChar(100)
+  claim_complain_reception_date       DateTime  @db.Date
+  claim_complain_description          String
+  treatment_action                    String
+  claim_complain_responsible_person   String    @db.VarChar(100)
+  claim_complain_deadline             DateTime  @db.Date
+  claim_complain_status               Status    @default(PENDING)
+  closure_date                        DateTime  @db.Date
+  observation                         String
+  created_byId                        Int
+  created_by                          User      @relation(fields: [created_byId], references: [id])
+  created_at                          DateTime  @default(now())
+}
+
+model PhotoDocumentProvingClosure {
+  id          Int      @id @default(autoincrement())
+  photo       String   // store file path or URL
+  document    String   // store file path or URL
+  created_byId Int
+  created_by  User     @relation(fields: [created_byId], references: [id])
+  created_at  DateTime @default(now())
+  complaintAndClaimRecords ComplaintAndClaimRecord[]
+}
+
+model ComplaintAndClaimRecord {
+  id                                     Int       @id @default(autoincrement())
+  number                                 String    @unique @db.VarChar(50)
+  date_occurred                          DateTime  @db.Date
+  local_occurrence                       String    @db.VarChar(100)
+  how_occurred                           String
+  who_involved                           String
+  report_and_explanation                 String
+  registered_date                        DateTime  @default(now())
+  claim_local_occurrence                 String    @db.VarChar(100)
+  complaintant_gender                    ComplaintantGender
+  complaintant_age                       Int
+  anonymous_complaint                    AnonymousComplaint
+  telephone                              String    @db.VarChar(50)
+  email                                  String?   @db.VarChar(100)
+  complaintant_address                   String    @db.VarChar(100)
+  complaintant_accepted                  ComplaintantAccepted
+  action_taken                           String
+  complaintant_notified                  NotifiedComplaint @default(NO)
+  notification_method                    String    @db.VarChar(100)
+  closing_date                           DateTime  @db.Date
+  claim_category                         ClaimCategory
+  other_claim_category                   String    @db.VarChar(100)
+  inspection_date                        DateTime  @db.Date
+  collected_information                  CollectedInformation
+  resolution_type                        ResolutionType
+  resolution_date                        DateTime  @db.Date
+  resolution_submitted                   ResolutionSubmitted
+  corrective_action_taken                String
+  involved_in_resolution                 String
+  complaintant_satisfaction              ComplaintantSatisfaction
+  photos_and_documents_proving_closure   PhotoDocumentProvingClosure[]
+  resources_spent                        Decimal   @default(0.00) @db.Decimal(10,2)
+  number_of_days_since_received_to_closure Int
+  monitoring_after_closure               MonitoringAfterClosure
+  monitoring_method_and_frequency        String
+  follow_up                              String
+  involved_institutions                  String?   @db.VarChar(100)
+  suggested_preventive_actions           String
+  created_byId                           Int
+  created_by                             User      @relation(fields: [created_byId], references: [id])
+  created_at                             DateTime  @default(now())
+}
+
+model WorkerGrievance {
+  id                                      Int      @id @default(autoincrement())
+  name                                    String   @db.VarChar(100)
+  company                                 String   @db.VarChar(100)
+  date                                    DateTime @db.Date
+  prefered_contact_method                 PreferedContactMethod
+  contact                                 String   @db.VarChar(100)
+  prefered_language                       PreferedLanguage
+  other_language                          String?  @db.VarChar(100)
+  grievance_details                       String
+  unique_identification_of_company_acknowlegement String @db.VarChar(100)
+  name_of_person_acknowledging_grievance    String   @db.VarChar(100)
+  position_of_person_acknowledging_grievance  String  @db.VarChar(100)
+  date_of_acknowledgement                 DateTime @db.Date
+  signature_of_person_acknowledging_grievance String  @db.VarChar(100)
+  follow_up_details                       String
+  closed_out_date                         DateTime @db.Date
+  signature_of_response_corrective_action_person String @db.VarChar(100)
+  acknowledge_receipt_of_response         String   @db.VarChar(100)
+  name_of_person_acknowledging_response    String   @db.VarChar(100)
+  signature_of_person_acknowledging_response String  @db.VarChar(100)
+  date_of_acknowledgement_response         DateTime @db.Date
+}
+
+model EnvironmentalFactor {
+  id          Int      @id @default(autoincrement())
+  description String   @db.VarChar(255)
+  environAssessments EnvironAndSocialRiskAndImapactAssessement[]
+}
+
+model RisksAndImpact {
+  id          Int      @id @default(autoincrement())
+  description String   @db.VarChar(255)
+  environAssessments EnvironAndSocialRiskAndImapactAssessement[]
+}
+
+model EnvironAndSocialRiskAndImapactAssessement {
+  id                       Int      @id @default(autoincrement())
+  activity                 String   @db.VarChar(255)
+  departmentId             Int
+  department               Department @relation(fields: [departmentId], references: [id])
+  risks_and_impactId       Int
+  risks_and_impact         RisksAndImpact @relation(fields: [risks_and_impactId], references: [id])
+  environmental_factorId   Int
+  environmental_factor     EnvironmentalFactor @relation(fields: [environmental_factorId], references: [id])
+  life_cycle               LifeCycle
+  statute                  Statute
+  extension                Extension
+  duration                 Duration
+  intensity                Intensity
+  probability              Probability
+  significance             String?  @db.VarChar(255)
+  description_of_measures  String
+  deadline                 String   @db.VarChar(255)
+  responsibleId            Int?
+  responsible              String?  @db.VarChar(255)
+  effectiveness_assessment String
+  legal_requirements       LegalRequirementControl[] @relation("AssessmentLegalRequirements")
+  compliance_requirements  String
+  observations             String
+  created_byId             Int
+  created_by               User     @relation(fields: [created_byId], references: [id])
+  created_at               DateTime @default(now())
+  updated_at               DateTime @updatedAt
+}
+
+model LegalRequirementControl {
+  id                  Int      @id @default(autoincrement())
+  number              String   @db.VarChar(255)
+  document_title      String   @db.VarChar(255)
+  effective_date      DateTime @db.Date
+  description         String
+  status              LegalStatus
+  amended_description String?
+  observation         String?
+  law_file            String?
+  created_byId        Int
+  created_by          User     @relation(fields: [created_byId], references: [id])
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  assessments         EnvironAndSocialRiskAndImapactAssessement[] @relation("AssessmentLegalRequirements")
+}
+
+model ResponsibleForFillingForm {
+  id       Int      @id @default(autoincrement())
+  name     String   @db.VarChar(255)
+  role     String   @db.VarChar(255)
+  contact  String   @db.VarChar(255)
+  date     DateTime @db.Date
+  signature String?  @db.VarChar(255)
+  screeningForms EnvironmentalSocialScreening[]
+}
+
+model ResponsibleForVerification {
+  id       Int      @id @default(autoincrement())
+  name     String   @db.VarChar(255)
+  role     String   @db.VarChar(255)
+  contact  String   @db.VarChar(255)
+  date     DateTime @db.Date
+  signature String?  @db.VarChar(255)
+  screeningForms EnvironmentalSocialScreening[]
+}
+
+model BiodeversidadeRecursosNaturais {
+  id          Int      @id @default(autoincrement())
+  reference   String?  @db.VarChar(255)
+  description String
+  screeningForms EnvironmentalSocialScreening[]
+}
+
+model Subproject {
+  id                     Int      @id @default(autoincrement())
+  name                   String   @db.VarChar(255)
+  contract_reference     String?  @db.VarChar(255)
+  contractor_name        String?  @db.VarChar(255)
+  estimated_cost         Decimal? @db.Decimal(15,2)
+  location               String   @db.VarChar(255)
+  geographic_coordinates String?  @db.VarChar(255)
+  subproject_type        String   @db.VarChar(255)
+  approximate_area       String
+  screeningForms         EnvironmentalSocialScreening[]
+  consultations          ConsultationAndEngagement[]
+  screeningResults       ScreeningResult[]
+}
+
+model EnvironmentalSocialScreening {
+  id                              Int      @id @default(autoincrement())
+  responsible_for_filling_formId  Int
+  responsible_for_filling_form    ResponsibleForFillingForm @relation(fields: [responsible_for_filling_formId], references: [id])
+  responsible_for_verificationId  Int
+  responsible_for_verification    ResponsibleForVerification @relation(fields: [responsible_for_verificationId], references: [id])
+  subprojectId                    Int
+  subproject                      Subproject @relation(fields: [subprojectId], references: [id])
+  biodiversidade_recursos_naturaisId Int
+  biodiversidade_recursos_naturais   BiodeversidadeRecursosNaturais @relation(fields: [biodiversidade_recursos_naturaisId], references: [id])
+  response                        ResponseType
+  comment                         String?
+  relevant_standard               String?  @db.VarChar(255)
+  consultation_and_engagement     String?
+  recomended_actions              String?
+  screening_resultsId             Int
+  screening_results               ScreeningResult @relation(fields: [screening_resultsId], references: [id])
+  created_byId                    Int
+  created_by                      User     @relation(fields: [created_byId], references: [id])
+  created_at                      DateTime @default(now())
+  updated_at                      DateTime @updatedAt
+}
+
+model ConsultationAndEngagement {
+  id           Int       @id @default(autoincrement())
+  subprojectId Int
+  subproject   Subproject @relation(fields: [subprojectId], references: [id])
+  details      String
+}
+
+model ScreeningResult {
+  id                         Int       @id @default(autoincrement())
+  subprojectId               Int
+  subproject                 Subproject @relation(fields: [subprojectId], references: [id])
+  risk_category              RiskCategory
+  description                String
+  instruments_to_be_developed String
+  screeningForms             EnvironmentalSocialScreening[]
+}
+
+model PreliminaryEnvironmentalInformation {
+  id                              Int      @id @default(autoincrement())
+  activity_name                   String   @db.VarChar(255)
+  activity_type                   ActivityType
+  other_activity_type             String?  @db.VarChar(255)
+  development_stage               DevelopmentStage
+  other_development_stage         String?  @db.VarChar(255)
+  proponents                      String?
+  address                         String   @db.VarChar(255)
+  telephone                       String?  @db.VarChar(255)
+  fax                             String?  @db.VarChar(255)
+  mobile_phone                    String?  @db.VarChar(255)
+  email                           String   @db.VarChar(255)
+  activity_location               String   @db.VarChar(255)
+  activity_city                   String   @db.VarChar(255)
+  activity_locality               String?  @db.VarChar(255)
+  activity_district               String?  @db.VarChar(255)
+  activity_province               Provinces
+  geographic_coordinates          String?
+  insertion_point                 InsertionPoint
+  territorial_planning_framework  TerritorialPlanningFramework
+  activity_infrastructure         String?
+  associated_activities           String?
+  construction_operation_technology_description String?
+  main_complementary_activities   String?
+  labor_type_quantity_origin      String?
+  raw_materials_type_quantity_origin_and_provenance String?
+  chemicals_used                  String?
+  type_origin_water_energy_consumption String?
+  fuels_lubricants_origin         String?
+  other_resources_needed          String?
+  land_ownership                  String?
+  activity_location_alternatives  String?
+  brief_description_on_local_regional_ref_env_situation String?
+  physical_characteristics_of_activity_site  PyhsicalCharacteristics?
+  predominant_ecosystems          PredominantEcosystems?
+  location_zone                   LocationZone?
+  type_predominant_vegetation     TypeOfPredominantVegetation?
+  land_use                        LandUse?
+  existing_infrastructure_around_activity_area String?
+  total_investment_value          Decimal? @db.Decimal(15,2)
+  created_byId                    Int
+  created_by                      User     @relation(fields: [created_byId], references: [id])
+  created_at                      DateTime @default(now())
+  updated_at                      DateTime @updatedAt
+}
+
+model EmbeddedMitigation {
+  id                                Int     @id @default(autoincrement())
+  item_number                       String  @db.VarChar(100)
+  issue                             String  @db.VarChar(255)
+  potential_impact_managed          String  @db.VarChar(255)
+  mitigation_measure                String  @db.VarChar(255)
+  timing                            String  @db.VarChar(255)
+  responsibility_for_implementation String  @db.VarChar(255)
+  means_of_verification             String  @db.VarChar(255)
+}
+
+model PlanningOrConstructionPhase {
+  id                                Int     @id @default(autoincrement())
+  item_number                       String  @db.VarChar(255)
+  issue                             String  @db.VarChar(255)
+  potential_impact_managed          String  @db.VarChar(255)
+  mitigation_measure                String  @db.VarChar(255)
+  timing                            String  @db.VarChar(255)
+  responsibility_for_implementation String  @db.VarChar(255)
+  means_of_verification             String  @db.VarChar(255)
+}
+
+model TrainingNeeds {
+  id                           Int      @id @default(autoincrement())
+  filled_by                    String   @db.VarChar(100)
+  date                         DateTime @db.Date
+  departmentId                 Int
+  department                   Department @relation(fields: [departmentId], references: [id])
+  training                     String   @db.VarChar(255)
+  training_objective           String
+  proposal_of_training_entity  String   @db.VarChar(255)
+  potential_training_participants String
+}
+
+model TrainingPlan {
+  id                   Int      @id @default(autoincrement())
+  updated_by           String   @db.VarChar(100)
+  date                 DateTime @db.Date
+  year                 Int
+  training_area        String   @db.VarChar(255)
+  training_title       String   @db.VarChar(255)
+  training_objective   String
+  training_type        TrainingTtype
+  training_entity      String   @db.VarChar(255)
+  duration             String   @db.VarChar(255)
+  number_of_trainees   Int
+  training_recipients  String
+  training_month       Months
+  training_status      TrainingStatus
+  observations         String
+}
+
+model TrainingEvaluationQuestions {
+  id       Int      @id @default(autoincrement())
+  question String   @db.VarChar(255)
+  trainingEffectivnessAssessments TrainingEffectivnessAssessment[]
+}
+
+model TrainingEffectivnessAssessment {
+  id                             Int      @id @default(autoincrement())
+  training                       String   @db.VarChar(255)
+  date                           DateTime @db.Date
+  departmentId                   Int
+  department                     Department @relation(fields: [departmentId], references: [id])
+  trainee                        String   @db.VarChar(100)
+  immediate_supervisor           String   @db.VarChar(100)
+  training_evaluation_questionId Int
+  training_evaluation_question   TrainingEvaluationQuestions @relation(fields: [training_evaluation_questionId], references: [id])
+  answer                         AnswerChoices
+  human_resource_evaluation      HumanResourceAnswerChoices
+}
+
+model Position {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(255)
+  trainingMatrices TrainingMatrix[]
+}
+
+model Training {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(255)
+  trainingMatrices TrainingMatrix[]
+}
+
+model ToolBoxTalks {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(255)
+  trainingMatrices TrainingMatrix[]
+}
+
+model TrainingMatrix {
+  id                             Int       @id @default(autoincrement())
+  date                           DateTime? @db.Date
+  positionId                     Int
+  position                       Position  @relation(fields: [positionId], references: [id])
+  trainingId                     Int
+  training                       Training  @relation(fields: [trainingId], references: [id])
+  toolbox_talksId                Int
+  toolbox_talks                  ToolBoxTalks @relation(fields: [toolbox_talksId], references: [id])
+  effectiveness                  Effectiveness
+  actions_training_not_effective String?
+  approved_by                    String   @db.VarChar(100)
+}
+
+model AcceptanceConfirmation {
+  id          Int      @id @default(autoincrement())
+  description String   @db.VarChar(255)
+  ohsactings  OHSACTING[] @relation("OHSACTING_AcceptanceConfirmation")
+}
+
+model OHSACTING {
+  id                       Int      @id @default(autoincrement())
+  fullname                 String   @db.VarChar(255)
+  designation              String?  @db.VarChar(100)
+  terms_of_office_from     String?  @db.VarChar(100)
+  terms_of_office_to       String?  @db.VarChar(100)
+  acceptance_confirmations AcceptanceConfirmation[] @relation("OHSACTING_AcceptanceConfirmation")
+  date                     DateTime @default(now()) @db.Date
+}
+
+model StrategicObjective {
+  id                         Int     @id @default(autoincrement())
+  description                String  @db.VarChar(255)
+  goals                      String  @db.VarChar(255)
+  strategies_for_achievement String
+}
+
+model SpecificObjective {
+  id                     Int       @id @default(autoincrement())
+  strategic_objective    String    @db.VarChar(255)
+  specific_objective     String    @db.VarChar(255)
+  actions_for_achievement String
+  responsible_person     String    @db.VarChar(100)
+  necessary_resources    String
+  indicator              String    @db.VarChar(100)
+  goal                   String    @db.VarChar(100)
+  monitoring_frequency   String    @db.VarChar(100)
+  deadline               DateTime  @db.Date
+  observation            String
+}
+
+model WasteTransferLog {
+  id                    Int      @id @default(autoincrement())
+  waste_type            String   @db.VarChar(255)
+  how_is_waste_contained String  @db.VarChar(255)
+  how_much_waste        Int
+  reference_number      String   @db.VarChar(255)
+  date_of_removal       DateTime @db.Date
+  transfer_company      String   @db.VarChar(255)
+  special_instructions  String
+}
+
+model WastManagement {
+  id                           Int      @id @default(autoincrement())
+  waste_route                  String   @db.VarChar(255)
+  labelling                    String   @db.VarChar(255)
+  storage                      String   @db.VarChar(255)
+  transportation_company_method String  @db.VarChar(255)
+  disposal_company             String   @db.VarChar(255)
+  special_instructions         String
+}
