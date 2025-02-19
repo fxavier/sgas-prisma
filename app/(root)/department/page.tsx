@@ -1,7 +1,6 @@
 'use client';
-
-import { useEffect, useState } from 'react';
 import type { Department } from '@prisma/client';
+import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +31,12 @@ import {
   removeDepartment,
   setSelectedDepartment,
 } from '@/lib/redux/features/departmentsSlice';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import {
+  departmentSchema,
+  DepartmentFormData,
+} from '@/lib/validations/departmentSchema';
 
 export default function Department() {
   const dispatch = useAppDispatch();
@@ -42,19 +47,40 @@ export default function Department() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<DepartmentFormData>({
+    resolver: zodResolver(departmentSchema),
+    defaultValues: {
+      name: selectedDepartment?.name || '',
+      description: selectedDepartment?.description || '',
+    },
+  });
+
   useEffect(() => {
     dispatch(fetchDepartments());
   }, [dispatch]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (selectedDepartment) {
+      reset({
+        name: selectedDepartment.name,
+        description: selectedDepartment.description,
+      });
+    } else {
+      reset({
+        name: '',
+        description: '',
+      });
+    }
+  }, [selectedDepartment, reset]);
+
+  const onSubmit: SubmitHandler<DepartmentFormData> = async data => {
     try {
       setIsSubmitting(true);
-      const formData = new FormData(e.currentTarget);
-      const data = {
-        name: formData.get('name') as string,
-        description: formData.get('description') as string,
-      };
 
       if (selectedDepartment) {
         await dispatch(
@@ -170,25 +196,33 @@ export default function Department() {
                 {selectedDepartment ? 'Edit Department' : 'Add New Department'}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className='space-y-6'>
+            <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
               <div className='space-y-4'>
                 <div className='space-y-2'>
                   <Label htmlFor='name'>Department Name</Label>
                   <Input
                     id='name'
-                    name='name'
-                    defaultValue={selectedDepartment?.name}
-                    required
+                    {...register('name')}
+                    placeholder='Enter department name'
                   />
+                  {errors.name && (
+                    <p className='text-sm text-destructive'>
+                      {errors.name.message}
+                    </p>
+                  )}
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='description'>Description</Label>
                   <Textarea
                     id='description'
-                    name='description'
-                    defaultValue={selectedDepartment?.description}
-                    required
+                    {...register('description')}
+                    placeholder='Enter department description'
                   />
+                  {errors.description && (
+                    <p className='text-sm text-destructive'>
+                      {errors.description.message}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className='flex justify-end gap-4'>
